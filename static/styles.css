@@ -135,3 +135,37 @@ h1 {
 .button:hover {
     background-color: #0056b3;
 }
+
+.upload-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.form-label {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.form-input {
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.result {
+    margin-top: 20px;
+    font-size: 1.2em;
+    color: #555;
+}
