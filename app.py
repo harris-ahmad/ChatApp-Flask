@@ -1,4 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    session,
+    flash,
+    jsonify
+)
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
@@ -20,6 +29,7 @@ app.secret_key = 'supersecretkey'
 # Initialize sentiment analyzer
 sid = SentimentIntensityAnalyzer()
 
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -38,6 +48,7 @@ def register():
         return redirect(url_for('login'))
 
     return render_template('register.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -58,6 +69,7 @@ def login():
 
     return render_template('login.html')
 
+
 @app.route('/chat')
 def chat_room():
     if 'username' not in session:
@@ -66,43 +78,63 @@ def chat_room():
     messages = Message.query.order_by(Message.timestamp).all()
     return render_template('chat.html', messages=messages)
 
+
 @socketio.on('join')
 def handle_join(data):
     room = data['room']
     join_room(room)
-    emit('message', {'username': 'System', 'message': data['username'] + ' has joined the room.'}, room=room)
+    emit('message', {'username': 'System',
+         'message': data['username'] + ' has joined the room.'}, room=room)
+
 
 @socketio.on('leave')
 def handle_leave(data):
     room = data['room']
     leave_room(room)
-    emit('message', {'username': 'System', 'message': data['username'] + ' has left the room.'}, room=room)
+    emit('message', {'username': 'System',
+         'message': data['username'] + ' has left the room.'}, room=room)
+
 
 @socketio.on('message')
 def handle_message(data):
     user = User.query.filter_by(username=data['username']).first()
 
     sentiment = sid.polarity_scores(data['message'])['compound']
-    sentiment_label = 'positive' if sentiment >= 0.05 else 'negative' if sentiment <= -0.05 else 'neutral'
+    sentiment_label = 'positive' if sentiment >= 0.05 else 'negative' \
+        if sentiment <= - 0.05 else 'neutral'
 
-    message = Message(content=data['message'], sentiment=sentiment_label, user_id=user.id)
+    message = Message(content=data['message'],
+                      sentiment=sentiment_label, user_id=user.id)
     db.session.add(message)
     db.session.commit()
 
     room = data['room']
-    emit('message', {'username': data['username'], 'message': data['message'], 'sentiment': sentiment_label}, room=room)
+    emit('message', {'username': data['username'],
+         'message': data['message'], 'sentiment': sentiment_label}, room=room)
+
 
 @app.route('/api/messages', methods=['GET'])
 def get_messages():
     messages = Message.query.all()
-    return jsonify([{'username': m.author.username, 'message': m.content, 'sentiment': m.sentiment, 'timestamp': m.timestamp} for m in messages])
+    return jsonify([{
+        'username': m.author.username,
+        'message': m.content,
+        'sentiment': m.sentiment,
+        'timestamp': m.timestamp
+        } for m in messages])
+
 
 @app.route('/api/analytics', methods=['GET'])
 def get_analytics():
     messages = Message.query.all()
-    df = pd.DataFrame([{'username': m.author.username, 'message': m.content, 'sentiment': m.sentiment, 'timestamp': m.timestamp} for m in messages])
+    df = pd.DataFrame([{'username': m.author.username,
+                        'message': m.content,
+                        'sentiment': m.sentiment,
+                        'timestamp': m.timestamp
+                        } for m in messages])
     sentiment_counts = df['sentiment'].value_counts().to_dict()
     return jsonify(sentiment_counts)
+
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
