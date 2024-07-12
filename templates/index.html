@@ -1,22 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Chat App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application Home</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            <h1>Real-time Chat</h1>
-        </div>
-        <div id="chat-box" class="chat-box"></div>
-        <div class="chat-input">
-            <input type="text" id="username" placeholder="Enter your username" class="input-field">
-            <input type="text" id="message" placeholder="Enter your message" class="input-field">
-            <button onclick="sendMessage()" class="send-button">Send</button>
+    <div class="container">
+        <h1>Welcome to the Real-time Chat Application</h1>
+        <div class="links">
+            <a href="{{ url_for('register') }}" class="button">Register</a>
+            <a href="{{ url_for('login') }}" class="button">Login</a>
+            <a href="{{ url_for('upload') }}" class="button">Upload Image for Sentiment Analysis</a>
+            <a href="{{ url_for('chat_room') }}" class="button">Enter Chat Room</a>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>

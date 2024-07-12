@@ -10,17 +10,22 @@ from flask import (
 )
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from config import Config
 from models import db, User, Message
+from forms import UploadForm
 from flask_migrate import Migrate
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import pandas as pd
+from PIL import Image
+import os
 
 nltk.download('vader_lexicon')
 
 app = Flask(__name__)
 app.config.from_object(Config)
+app.config['UPLOAD_FOLDER'] = 'uploads'
 db.init_app(app)
 migrate = Migrate(app, db)
 socketio = SocketIO(app)
@@ -28,6 +33,11 @@ app.secret_key = 'supersecretkey'
 
 # Initialize sentiment analyzer
 sid = SentimentIntensityAnalyzer()
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -121,7 +131,7 @@ def get_messages():
         'message': m.content,
         'sentiment': m.sentiment,
         'timestamp': m.timestamp
-        } for m in messages])
+    } for m in messages])
 
 
 @app.route('/api/analytics', methods=['GET'])
@@ -134,6 +144,30 @@ def get_analytics():
                         } for m in messages])
     sentiment_counts = df['sentiment'].value_counts().to_dict()
     return jsonify(sentiment_counts)
+
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    form = UploadForm()
+    result = None
+    if form.validate_on_submit():
+        filename = secure_filename(form.image.data.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        form.image.data.save(filepath)
+        result = analyze_image(filepath)
+    return render_template('upload.html', form=form, result=result)
+
+
+def analyze_image(image_path):
+    # Here you should implement your image sentiment analysis
+    # For the purpose of this example, we'll assume a simple analysis
+    image = Image.open(image_path)
+    # Dummy sentiment analysis for demonstration
+    if image.width > image.height:
+        sentiment = 'positive'
+    else:
+        sentiment = 'negative'
+    return sentiment
 
 
 if __name__ == '__main__':
