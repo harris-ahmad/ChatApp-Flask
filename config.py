@@ -1,6 +1,7 @@
+import os
 
 
 class Config:
-    SECRET_KEY = 'secret-key'
-    SQLALCHEMY_DATABASE_URI = 'postgresql://chat_app_user:ladBob12@localhost/chat_app_db'
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
